@@ -63,11 +63,26 @@ add_link_options(-T ${LINKER_SCRIPT})
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 
-set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
+set(GCC_HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
-        COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
+        COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${GCC_HEX_FILE}
         COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
         COMMENT "Building ${HEX_FILE}
 Building ${BIN_FILE}")
+
+set(MDK_HEX_FILE ${PROJECT_BINARY_DIR}/../../MDKProject/MDK-ARM/MDKProject/MDKProject.hex)
+set(HEX_FILE ${PROJECT_BINARY_DIR}/../${PROJECT_NAME}.hex)
+
+add_custom_target(merge ALL
+        COMMAND mergehex -m ${GCC_HEX_FILE} ${MDK_HEX_FILE} -o ${HEX_FILE}
+        DEPENDS ${PROJECT_NAME}.elf
+        COMMENT "mergehex ${HEX_FILE}"
+        )
+
+add_custom_target(flash ALL
+        COMMAND pyocd flash --erase sector --target stm32f401ccux ${HEX_FILE}
+        DEPENDS merge
+        COMMENT "Flash ${HEX_FILE}"
+)
