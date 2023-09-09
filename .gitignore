@@ -1,2 +1,5 @@
 algo/GCCProject/cmake-build-debug
 algo/MDKProject/MDK-ARM/MDKProject
+
+irq/GCCProject/cmake-build-debug
+irq/MDKProject/MDK-ARM/MDKProject
